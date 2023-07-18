@@ -39,7 +39,12 @@ try {
 }
 }
 
+const isAuth = async(req,res) => {
+    
+}
+
 module.exports = {
     Register,
-    Login
+    Login,
+    isAuth
 }
