@@ -39,8 +39,17 @@ try {
 }
 }
 
-const isAuth = async(req,res) => {
-    
+const isAuth = async(req,res,next) => {
+    try {
+      const { token } = req.headers;
+      const user_id = await verify(token);
+      const users = (await pg("select * from auth where id = $1",user_id))[0];
+      if (users) {
+        next()
+      }
+    } catch (error) {
+        res.status(500).json({error})
+    }
 }
 
 module.exports = {

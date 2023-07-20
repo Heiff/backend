@@ -15,11 +15,18 @@ CREATE TABLE card(
 CREATE TABLE channel(
     id serial not null primary key,
     name varchar(64) not null,
-    week integer not null,
     month integer not null,
     year integer not null,
     descr text not null,
     card_id integer not null,
     author_id integer not null
 );
-
+CREATE TABLE subscribe(
+    id serial not null primary key,
+    name varchar(32) not null,
+    price integer not null,
+    year integer not null,
+    month integer not null,
+    day integer not null,
+    user_id integer not null
+);
