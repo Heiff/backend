@@ -23,10 +23,12 @@ CREATE TABLE channel(
 );
 CREATE TABLE subscribe(
     id serial not null primary key,
-    name varchar(32) not null,
+    name varchar(32) not null unique,
     price integer not null,
     year integer not null,
     month integer not null,
     day integer not null,
+    channel_id integer not null,
     user_id integer not null
 );
+

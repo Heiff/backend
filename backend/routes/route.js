@@ -1,13 +1,14 @@
 const { Router } = require('express');
-const { addCard, createChannel, getChannel, subscribe, getCard, DeleteSubscribe } = require('../controller/controller');
+const { addCard, createChannel, getChannel, subscribe, getCard, DeleteSubscribe, DeleteChannel } = require('../controller/controller');
 const { isAuth } = require('../controller/auth');
 const router = Router();
 
-router.post('/card',addCard);
-router.post('/channel',createChannel);
+router.post('/card',isAuth,addCard);
+router.post('/channel',isAuth,createChannel);
 router.get('/channel',isAuth,DeleteSubscribe,getChannel);
-router.post('/subscribe',subscribe)
-router.get('/card',getCard)
+router.post('/subscribe',isAuth,subscribe)
+router.get('/card',isAuth,getCard)
+router.delete('/delete/:id',isAuth,DeleteChannel)
 
 
 module.exports = router
