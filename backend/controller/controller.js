@@ -19,8 +19,7 @@ const addCard = async(req,res) => {
 const createChannel = async(req,res) => {
 try {
     const {name,month,year,descr} = req.body;
-    const { token } = req.cookies;
-    const user_id = await verify(token);
+    const user_id = await verify(req.headers.token);
     const card_id = (await pg("select * from card where user_id = $1",user_id))[0].id;
     await pg("insert into channel(name,month,year,descr,card_id,author_id)values($1,$2,$3,$4,$5,$6)",name,month,year,descr,card_id,user_id);
     res.status(201).json({message:'created channel'})
@@ -57,7 +56,6 @@ const getChannel = async(req,res) => {
             const my = data.filter((el) => {  
                 return el.author_id == user_id;
             })
-            
             res.status(200).json({data:notSub,sub:Sub,My:my,user_id})
         }
         else if (user_id) {
@@ -109,8 +107,7 @@ const getCard = async(req,res) =>{
 const subscribe = async(req,res) => {
     try {
         const { option,id,name,el } = req.body;
-        const { token } = req.cookies;
-        const user_id = await verify(token);
+        const user_id = await verify(req.headers.token);
         const card = (await pg("select * from card where id = $1",user_id))[0];
         const channel = (await pg("select * from channel where id = $1",el))[0];
         const subscribes = (await pg("select * from subscribe where user_id = $1",user_id))[0];
