@@ -4,8 +4,7 @@ const pg = require('../db/pg');
 const addCard = async(req,res) => {
     try {
         const {name,number,balance} = req.body;
-        const { token } = req.cookies;
-        const user_id = await verify(token);
+        const user_id = await verify(req.headers.token);
         const card = (await pg("insert into card(name,number,balance,user_id)values($1,$2,$3,$4) returning *",name,number,balance,user_id))[0]
         res.status(201).json({message:'succes'})
     } catch (error) {
@@ -42,53 +41,10 @@ const DeleteChannel = async(req,res) => {
 
 const getChannel = async(req,res) => {
     try {
-        const user_id = await verify(req.headers.token);
-        const data = await pg("select * from channel");
-        const subscribe = (await pg("select * from subscribe where user_id = $1",user_id))[0];
-        
-        if (user_id && subscribe) {
-            const notSub = data.filter((el) => {  
-                return el.id != subscribe.channel_id && el.author_id != user_id;
-            })
-            const Sub = data.filter((el) => {  
-                return el.id == subscribe.channel_id && el.author_id != user_id;
-            })
-            const my = data.filter((el) => {  
-                return el.author_id == user_id;
-            })
-            res.status(200).json({data:notSub,sub:Sub,My:my,user_id})
-        }
-        else if (user_id) {
-            let notSub
-           if (subscribe) {
-                notSub = data.filter((el) => {  
-                return el.id != subscribe.channel_id && el.author_id != user_id;
-            })
-            const Sub = data.filter((el) => {  
-                return el.id == subscribe.channel_id && el.author_id != user_id;
-            })
-            const my = data.filter((el) => {  
-                return el.author_id == user_id;
-            })
-            console.log(notSub);
-            res.status(200).json({data:notSub,sub:Sub,My:my,user_id})
-
-           }
-           else{
-            const all = data.filter((el) => {  
-                return el.author_id != user_id;
-                })
-            const my = data.filter((el) => {  
-            return el.author_id == user_id;
-            })
-            res.status(200).json({data:all,My:my,user_id})
-           }
-            
-           
-        }
-        else{
-            res.status(200).json({data,user_id})
-        }
+       const user_id = await verify(req.headers.token);
+       const data = await pg("select * from channel");
+       const my = await pg("select * from channel where author_id = $1",user_id)
+       res.status(200).json({data,my})
     } catch (error) {
         console.log(error);
     }
@@ -133,7 +89,7 @@ const subscribe = async(req,res) => {
         if (subscribes || subscribes == undefined) {
             await pg("start transaction")[0];
             if (option < card.balance && subscribes) {
-               if (el != user_id && subscribes.name != name) {
+               if (el != user_id) {
                 await pg("update card set balance = balance - $1 where user_id = $2",option,user_id);
                 await pg("update card set balance = balance + $1 where id = $2",option,id);
                 await pg("insert into subscribe(name,price,year,month,day,user_id,channel_id)values($1,$2,$3,$4,$5,$6,$7)",name,option,year,month,day,user_id,el);
@@ -147,11 +103,12 @@ const subscribe = async(req,res) => {
                 res.status(201).json({message:'succes'})
             }
             else{
-                await pg("ROLLBACK");
+                
                 res.status(400).json({message:'error'})
             }
         }  
     } catch (error) {
+        (await pg("ROLLBACK"))[0];
         console.log(error);
     }
 };
